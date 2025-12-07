@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Результат — AudioToTab{% endblock %}
+
+{% block content %}
+
+<style>
+    /* --- HEADER SECTION --- */
+    .result-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .success-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #ecfdf5;
+        color: #059669;
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+        border: 1px solid #d1fae5;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        animation: dropIn 0.5s ease;
+    }
+
+    @keyframes dropIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .file-name {
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        background: #f1f5f9;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* --- CODE EDITOR WINDOW (The Main Feature) --- */
+    .editor-wrapper {
+        position: relative;
+        margin-bottom: 40px;
+    }
+
+    /* Светящаяся подложка (Glow Effect) */
+    .editor-glow {
+        position: absolute;
+        top: -10px; left: -10px; right: -10px; bottom: -10px;
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.4), rgba(244, 63, 94, 0.4));
+        filter: blur(20px);
+        z-index: 0;
+        opacity: 0.6;
+        border-radius: 20px;
+    }
+
+    .code-window {
+        position: relative;
+        z-index: 1;
+        background: #0f172a; /* Темный цвет, как в VS Code */
+        border-radius: 12px;
+        border: 1px solid #334155;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        overflow: hidden;
+    }
+
+    /* Toolbar в стиле macOS */
+    .window-bar {
+        background: #1e293b;
+        padding: 12px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #334155;
+    }
+
+    .window-controls {
+        display: flex;
+        gap: 8px;
+    }
+
+    .control-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .window-title {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+    }
+
+    .window-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    /* Кнопки в тулбаре */
+    .action-btn {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #cbd5e1;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .action-btn:hover {
+        background: rgba(255,255,255,0.1);
+        border-color: rgba(255,255,255,0.3);
+        color: white;
+    }
+
+    /* Область кода */
+    .code-content {
+        margin: 0;
+        padding: 24px;
+        color: #a5f3fc; /* Cyan цвет для текста (приятный глазу) */
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        overflow-x: auto;
+        white-space: pre;
+    }
+    
+    /* Скроллбар внутри редактора */
+    .code-content::-webkit-scrollbar { height: 10px; }
+    .code-content::-webkit-scrollbar-track { background: #0f172a; }
+    .code-content::-webkit-scrollbar-thumb { 
+        background: #334155; 
+        border-radius: 5px; 
+        border: 2px solid #0f172a;
+    }
+    .code-content::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    /* --- BOTTOM NAV --- */
+    .bottom-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 20px;
+    }
+
+    .print-link {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: color 0.2s;
+        border: none;
+        background: none;
+        cursor: pointer;
+    }
+
+    .print-link:hover { color: var(--primary); }
+
+    @media (max-width: 600px) {
+        .window-title { display: none; } /* Скрываем название на телефоне */
+        .window-bar { padding: 10px; }
+    }
+</style>
+
+<!-- HEADER -->
+<div class="result-header">
+    <div class="success-badge">
+        <span>✓</span> Анализ завершен
+    </div>
+    <h1 style="margin-bottom: 10px;">Ваша табулатура готова</h1>
+    <div>
+        <span style="color: var(--text-muted);">Файл:</span> 
+        <span class="file-name">{{ filename }}</span>
+    </div>
+</div>
+
+<!-- EDITOR WRAPPER -->
+<div class="editor-wrapper">
+    <!-- Glow Effect Background -->
+    <div class="editor-glow"></div>
+
+    <!-- The Window -->
+    <div class="code-window">
+        <div class="window-bar">
+            <!-- macOS dots -->
+            <div class="window-controls">
+                <div class="control-dot dot-red"></div>
+                <div class="control-dot dot-yellow"></div>
+                <div class="control-dot dot-green"></div>
+            </div>
+            
+            <!-- Filename in center -->
+            <div class="window-title">generated_tab.txt</div>
+
+            <!-- Toolbar Actions -->
+            <div class="window-actions">
+                <button class="action-btn" onclick="copyToClipboard()" id="copyBtn">
+                    📋 <span class="btn-text">Копировать</span>
+                </button>
+                <button class="action-btn" onclick="downloadTxt()">
+                    💾 <span class="btn-text">Сохранить</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- The Content -->
+        <pre class="code-content" id="tabOutput">{{ tabs_text }}</pre>
+    </div>
+</div>
+
+<!-- NAVIGATION -->
+<div class="bottom-nav">
+    <a href="/converter" class="btn btn-secondary" style="padding: 10px 20px;">
+        ← Загрузить другой трек
+    </a>
+    
+    <button onclick="window.print()" class="print-link">
+        🖨️ Распечатать версию
+    </button>
+</div>
+
+<!-- JAVASCRIPT LOGIC -->
+<script>
+    // 1. Копирование
+    function copyToClipboard() {
+        const tabText = document.getElementById('tabOutput').innerText;
+        const btn = document.getElementById('copyBtn');
+        const btnText = btn.querySelector('.btn-text');
+        
+        navigator.clipboard.writeText(tabText).then(() => {
+            // Эффект успеха
+            btn.style.background = 'rgba(16, 185, 129, 0.2)'; // Green tint
+            btn.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+            btn.style.color = '#34d399';
+            btnText.innerText = "Скопировано!";
+            
+            setTimeout(() => {
+                // Сброс
+                btn.style.background = ''; 
+                btn.style.borderColor = '';
+                btn.style.color = '';
+                btnText.innerText = "Копировать";
+            }, 2000);
+        }).catch(err => {
+            console.error('Ошибка:', err);
+        });
+    }
+
+    // 2. Скачивание
+    function downloadTxt() {
+        const tabText = document.getElementById('tabOutput').innerText;
+        const filename = "tablature_{{ filename }}.txt"; // Добавляем имя файла в название
+        
+        const blob = new Blob([tabText], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }
+</script>
+
+{% endblock %}

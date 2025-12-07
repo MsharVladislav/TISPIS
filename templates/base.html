@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AudioToTab Converter{% endblock %}</title>
+    
+    <!-- Подключаем шрифты: Inter для интерфейса, JetBrains Mono для кода (он более стильный, чем Courier) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 1. DESIGN TOKENS (Переменные) --- */
+        :root {
+            /* Палитра: Индиго и Фиолетовый (Трендовый Tech-стиль) */
+            --primary: #4f46e5;
+            --primary-glow: rgba(79, 70, 229, 0.4);
+            --primary-dark: #4338ca;
+            
+            --accent: #f43f5e; /* Розовый акцент для важных элементов */
+            
+            /* Фон и Поверхности */
+            --bg-body: #f8fafc;
+            --bg-surface: #ffffff;
+            
+            /* Текст */
+            --text-main: #0f172a;      /* Почти черный, но мягче */
+            --text-muted: #64748b;     /* Слейт-грей */
+            
+            /* Декорации */
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --shadow-card: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.01);
+            --shadow-glow: 0 0 20px var(--primary-glow);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* --- 2. RESET & BASE --- */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            /* Фоновый паттерн (современный mesh gradient) */
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(244, 63, 94, 0.05) 0px, transparent 50%);
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased; /* Четкие шрифты на Mac */
+        }
+
+        /* --- 3. MODERN NAVBAR (Glassmorphism) --- */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px); /* Эффект матового стекла */
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+            padding: 0 24px;
+        }
+
+        .navbar {
+            max-width: 1200px;
+            margin: 0 auto;
+            height: 72px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.35rem;
+            color: var(--text-main);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.03em; /* Плотный кернинг делает лого дорогим */
+        }
+
+        .logo-icon {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            transition: all 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        .nav-cta {
+            background: var(--text-main);
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .nav-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        /* --- 4. MAIN LAYOUT --- */
+        .container {
+            max-width: 960px; /* Чуть уже для лучшей читаемости */
+            width: 92%;
+            margin: 48px auto;
+            flex: 1;
+        }
+
+        .card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            padding: 48px; /* Больше воздуха внутри */
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- 5. TYPOGRAPHY --- */
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            color: var(--text-main);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+        
+        h2 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin-top: 2rem; }
+        
+        p {
+            line-height: 1.7;
+            color: var(--text-muted);
+            font-size: 1.05rem; /* Чуть крупнее для комфорта */
+            margin-bottom: 1.5rem;
+        }
+
+        /* --- 6. COMPONENTS (Buttons & Forms) --- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary);
+            color: white;
+            padding: 14px 28px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+            font-size: 1rem;
+            letter-spacing: 0.01em;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn:active { transform: translateY(0); }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-main);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        /* Инпуты */
+        input[type="file"] {
+            /* Стили для дефолтного инпута, если вдруг он вылезет */
+            padding: 12px;
+            border: 2px dashed #cbd5e1;
+            border-radius: var(--radius-md);
+            width: 100%;
+            background: #f1f5f9;
+        }
+
+        /* --- 7. SPECIAL: TAB DISPLAY (Результат) --- */
+        .tab-display {
+            background-color: #0d1117; /* GitHub Dark dimmed */
+            color: #7ee787; /* GitHub Green */
+            padding: 32px;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace; /* Проф. шрифт для кода */
+            white-space: pre;
+            overflow-x: auto;
+            border: 1px solid #30363d;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        
+        /* --- 8. FOOTER --- */
+        footer {
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            padding: 40px 0;
+            text-align: center;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .footer-text {
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        .footer-badge {
+            display: inline-block;
+            background: #f1f5f9;
+            color: var(--text-main);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Мобильная адаптивность */
+        @media (max-width: 768px) {
+            .navbar { padding: 0 15px; height: 60px; }
+            .nav-links a:not(.nav-cta) { display: none; } /* Скрываем ссылки, оставляем кнопку */
+            .card { padding: 24px; }
+            h1 { font-size: 1.75rem; }
+            .logo span { display: none; } /* Скрываем текст лого на очень маленьких экранах */
+            .logo-icon { width: 32px; height: 32px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="navbar">
+            <a href="/" class="logo">
+                <div class="logo-icon">🎸</div>
+                <span>AudioToTab <span style="font-weight: 400; color: var(--text-muted); font-size: 0.9em;">Pro</span></span>
+            </a>
+            <nav class="nav-links">
+                <a href="/">Главная</a>
+                <a href="/about">Технология</a>
+                <a href="/converter" class="nav-cta">Конвертер</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-badge">Project 2025</div>
+            <div class="footer-text">
+                &copy; 2025 Разработано для народа.
+            </div>
+            <div class="footer-text" style="font-size: 0.75rem;">
+                Powered by Python
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

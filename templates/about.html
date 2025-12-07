@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Технология — AudioToTab{% endblock %}
+
+{% block content %}
+
+<style>
+    /* --- ЗАГОЛОВОК СТРАНИЦЫ --- */
+    .page-header {
+        text-align: center;
+        margin-bottom: 60px;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .page-label {
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 16px;
+        display: inline-block;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 16px;
+        color: var(--text-main);
+        line-height: 1.2;
+    }
+
+    .page-desc {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+
+    /* --- СЕКЦИИ --- */
+    .section-block {
+        margin-bottom: 80px;
+    }
+
+    .section-head {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .section-head h2 {
+        font-size: 1.5rem;
+        margin: 0;
+        color: var(--text-main);
+    }
+
+    .section-line {
+        height: 1px;
+        background: #e2e8f0;
+        flex: 1;
+    }
+
+    /* --- PROCESS CARDS (Алгоритм) --- */
+    .process-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+    }
+
+    .process-card {
+        background: white;
+        padding: 32px;
+        border-radius: 16px;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .process-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.08);
+        border-color: rgba(79, 70, 229, 0.3);
+    }
+
+    .step-badge {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+    }
+
+    .process-card h3 {
+        margin: 0 0 10px 0;
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+
+    .process-card p {
+        font-size: 0.95rem;
+        margin: 0;
+        color: var(--text-muted);
+    }
+
+    /* --- REQUIREMENTS (Dos & Don'ts) --- */
+    .req-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    .req-box {
+        background: white;
+        border-radius: 16px;
+        padding: 32px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .req-box.good { border-top: 4px solid #10b981; }
+    .req-box.bad { border-top: 4px solid #ef4444; }
+
+    .req-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .req-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .req-list li {
+        margin-bottom: 16px;
+        padding-left: 30px;
+        position: relative;
+        color: var(--text-main);
+        font-size: 0.95rem;
+    }
+
+    /* Кастомные иконки списка */
+    .req-list li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 2px;
+        width: 20px;
+        height: 20px;
+        background-size: contain;
+        background-repeat: no-repeat;
+    }
+
+    .good .req-list li::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2310b981'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'%3E%3C/path%3E%3C/svg%3E");
+    }
+
+    .bad .req-list li::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ef4444'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'%3E%3C/path%3E%3C/svg%3E");
+    }
+
+    /* --- TECH STACK (Стек) --- */
+    .tech-wrapper {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 32px;
+        text-align: center;
+        border: 1px dashed #cbd5e1;
+    }
+
+    .tech-badges {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .tech-tag {
+        background: white;
+        border: 1px solid #e2e8f0;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-main);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .tech-tag span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    /* Цветные точки для технологий */
+    .dot-py { background: #3b82f6; }
+    .dot-flask { background: #000; }
+    .dot-lib { background: #d946ef; }
+    .dot-js { background: #f59e0b; }
+
+    @media (max-width: 768px) {
+        .req-grid { grid-template-columns: 1fr; }
+        .page-title { font-size: 2rem; }
+    }
+</style>
+
+<!-- HEADER -->
+<div class="page-header">
+    <div class="page-label">Документация</div>
+    <h1 class="page-title">Как это работает?</h1>
+    <p class="page-desc">
+        Погружение в алгоритмы цифровой обработки сигналов (DSP), которые превращают аудиоволны в читаемую музыку.
+    </p>
+</div>
+
+<!-- 1. АЛГОРИТМ -->
+<div class="section-block">
+    <div class="section-head">
+        <h2>Алгоритм ядра</h2>
+        <div class="section-line"></div>
+    </div>
+    
+    <div class="process-grid">
+        <!-- Card 1 -->
+        <div class="process-card">
+            <div class="step-badge">1</div>
+            <h3>Спектральный анализ</h3>
+            <p>
+                Загрузка аудио через <strong>Librosa</strong>. Применение STFT (Short-Time Fourier Transform) для разложения сигнала на частотный спектр.
+            </p>
+        </div>
+        
+        <!-- Card 2 -->
+        <div class="process-card">
+            <div class="step-badge">2</div>
+            <h3>Детекция питча</h3>
+            <p>
+                Использование вероятностного алгоритма <strong>pYIN</strong> для точного определения фундаментальной частоты (f0) и отсеивания гармоник.
+            </p>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="process-card">
+            <div class="step-badge">3</div>
+            <h3>Маппинг грифа</h3>
+            <p>
+                Перевод частот (Гц) в MIDI-ноты. Эвристический поиск оптимальной струны и лада для минимизации движений руки гитариста.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- 2. ТРЕБОВАНИЯ -->
+<div class="section-block">
+    <div class="section-head">
+        <h2>Требования к входным данным</h2>
+        <div class="section-line"></div>
+    </div>
+
+    <div class="req-grid">
+        <!-- GOOD -->
+        <div class="req-box good">
+            <div class="req-title" style="color: #059669;">
+                Поддерживается
+            </div>
+            <ul class="req-list good">
+                <li>Чистый звук гитары (Clean Tone)</li>
+                <li>Одноголосые мелодии (Соло)</li>
+                <li>Умеренный темп исполнения</li>
+                <li>Форматы .mp3, .wav, .flac (16-bit)</li>
+            </ul>
+        </div>
+
+        <!-- BAD -->
+        <div class="req-box bad">
+            <div class="req-title" style="color: #dc2626;">
+                Ограничения v1.0
+            </div>
+            <ul class="req-list bad">
+                <li>Полифония (Аккорды)</li>
+                <li>Сильный перегруз (Heavy Distortion)</li>
+                <li>Микс с барабанами и басом</li>
+                <li>Низкое качество записи (шумы)</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- 3. СТЕК -->
+<div class="section-block">
+    <div class="tech-wrapper">
+        <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-muted);">Built with modern stack</h3>
+        <div class="tech-badges">
+            <div class="tech-tag"><span class="dot-py"></span>Python 3.10</div>
+            <div class="tech-tag"><span class="dot-flask"></span>Flask Framework</div>
+            <div class="tech-tag"><span class="dot-lib"></span>Librosa DSP</div>
+            <div class="tech-tag"><span class="dot-py"></span>NumPy</div>
+            <div class="tech-tag"><span class="dot-js"></span>Vanilla JS</div>
+        </div>
+    </div>
+</div>
+
+<div style="text-align: center; margin-top: 60px;">
+    <a href="/converter" class="btn">
+        Попробовать алгоритм в деле →
+    </a>
+</div>
+
+{% endblock %}

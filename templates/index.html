@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Главная — Автоматизация табулатур{% endblock %}
+
+{% block content %}
+
+<style>
+    /* --- HERO SECTION --- */
+    .hero-section {
+        text-align: center;
+        padding: 60px 0 80px;
+        position: relative;
+    }
+
+    /* Бейдж "Новинка" сверху */
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(79, 70, 229, 0.1);
+        color: var(--primary);
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 24px;
+        border: 1px solid rgba(79, 70, 229, 0.2);
+    }
+
+    .hero-title {
+        font-size: 3.5rem; /* Очень крупный заголовок */
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        margin-bottom: 24px;
+        color: var(--text-main);
+    }
+
+    /* Градиентный текст */
+    .gradient-text {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: var(--text-muted);
+        max-width: 640px;
+        margin: 0 auto 40px;
+        line-height: 1.6;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+    }
+
+    /* --- FEATURES GRID --- */
+    .features-section {
+        margin-top: 60px;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 32px;
+    }
+
+    .feature-item {
+        background: white;
+        padding: 32px;
+        border-radius: 20px;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-item:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.1);
+        border-color: rgba(79, 70, 229, 0.3);
+    }
+
+    /* Красивая подложка под иконку */
+    .feature-icon-wrapper {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(244, 63, 94, 0.1));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        margin-bottom: 20px;
+        color: var(--primary);
+    }
+
+    .feature-title {
+        font-weight: 700;
+        font-size: 1.25rem;
+        margin-bottom: 12px;
+        color: var(--text-main);
+        letter-spacing: -0.01em;
+    }
+
+    .feature-text {
+        font-size: 0.95rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+
+    /* --- STEPS (PROCESS) --- */
+    .steps-section {
+        margin-top: 100px;
+        padding-top: 60px;
+        border-top: 1px solid #e2e8f0;
+        text-align: center;
+    }
+
+    .section-header {
+        margin-bottom: 50px;
+    }
+    
+    .section-header h2 {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+
+    .steps-container {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    /* Линия, соединяющая шаги */
+    .steps-container::before {
+        content: '';
+        position: absolute;
+        top: 25px;
+        left: 50px;
+        right: 50px;
+        height: 2px;
+        background: #e2e8f0;
+        z-index: 0;
+    }
+
+    .step-item {
+        position: relative;
+        z-index: 1;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .step-circle {
+        width: 50px;
+        height: 50px;
+        background: white;
+        border: 2px solid var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 16px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        transition: transform 0.3s;
+    }
+    
+    .step-item:hover .step-circle {
+        background: var(--primary);
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .step-title {
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 4px;
+    }
+
+    .step-desc {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    @media (max-width: 768px) {
+        .hero-title { font-size: 2.5rem; }
+        .steps-container { flex-direction: column; gap: 30px; }
+        .steps-container::before { display: none; } /* Убираем линию на мобилках */
+    }
+</style>
+
+<!-- HERO BLOCK -->
+<div class="hero-section">
+    <div class="hero-badge">✨ AI-Powered V 1.0</div>
+    
+    <h1 class="hero-title">
+        Преврати аудио в <br>
+        <span class="gradient-text">гитарную табулатуру</span>
+    </h1>
+    
+    <p class="hero-subtitle">
+        Больше не нужно тратить часы на подбор соло. Наш алгоритм на базе FFT и нейросетей автоматически распознает ноты и создаст точные табы за секунды.
+    </p>
+    
+    <div class="hero-buttons">
+        <a href="/converter" class="btn">🚀 Начать сейчас</a>
+        <a href="/about" class="btn btn-secondary">Узнать больше</a>
+    </div>
+</div>
+
+<!-- FEATURES BLOCK -->
+<div class="features-section">
+    <div class="features-grid">
+        <!-- Карточка 1 -->
+        <div class="feature-item">
+            <div class="feature-icon-wrapper">⚡</div>
+            <div class="feature-title">Скорость света</div>
+            <div class="feature-text">
+                Забудьте о долгом ожидании. Загрузите MP3, и наш высокопроизводительный бэкенд обработает трек быстрее, чем вы достанете медиатор.
+            </div>
+        </div>
+
+        <!-- Карточка 2 -->
+        <div class="feature-item">
+            <div class="feature-icon-wrapper">🧠</div>
+            <div class="feature-title">Умный анализ</div>
+            <div class="feature-text">
+                Мы используем продвинутые алгоритмы обработки сигналов (DSP) для фильтрации шумов и выделения чистой мелодии из аудиопотока.
+            </div>
+        </div>
+
+        <!-- Карточка 3 -->
+        <div class="feature-item">
+            <div class="feature-icon-wrapper">🎸</div>
+            <div class="feature-title">Логика грифа</div>
+            <div class="feature-text">
+                Система понимает физику гитары. Она не предложит вам сыграть ноту на -1 ладу, а подберет самую удобную аппликатуру.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PROCESS BLOCK (STEPS) -->
+<div class="steps-section">
+    <div class="section-header">
+        <h2>Как это работает?</h2>
+        <p style="color: var(--text-muted);">Простой путь от аудиофайла до готовой песни</p>
+    </div>
+
+    <div class="steps-container">
+        <!-- Шаг 1 -->
+        <div class="step-item">
+            <div class="step-circle">1</div>
+            <div class="step-title">Загрузка</div>
+            <div class="step-desc">MP3 или WAV файл</div>
+        </div>
+
+        <!-- Шаг 2 -->
+        <div class="step-item">
+            <div class="step-circle">2</div>
+            <div class="step-title">Обработка</div>
+            <div class="step-desc">Анализ частот (FFT)</div>
+        </div>
+
+        <!-- Шаг 3 -->
+        <div class="step-item">
+            <div class="step-circle">3</div>
+            <div class="step-title">Результат</div>
+            <div class="step-desc">Скачивание .txt</div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
